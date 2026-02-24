@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ebek School Library Management Platform</title>
+
+  <!-- Required CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --navy:#1F3864;
+      --blue:#2E75B6;
+      --teal:#1B6B74;
+      --purple:#6B4C9A;
+      --darkBlue:#1A4A7A;
+      --gold:#C49A1E;
+      --bg:#F0F4F8;
+      --card:#FFFFFF;
+      --success:#1B6B74;
+      --error:#C00000;
+      --warning:#C49A1E;
+
+      --shadow: 0 10px 30px rgba(31,56,100,0.12);
+      --radius: 12px;
+      --btnRadius: 8px;
+      --font:'Segoe UI', Arial, sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: var(--font);
+      background:
+        radial-gradient(1200px 600px at 12% 8%, rgba(46,117,182,0.14), transparent 55%),
+        radial-gradient(900px 520px at 92% 12%, rgba(196,154,30,0.10), transparent 55%),
+        radial-gradient(900px 560px at 86% 92%, rgba(31,56,100,0.10), transparent 55%),
+        var(--bg);
+      color:#1f2937;
+    }
+
+    button,input,select{ font-family: var(--font); }
+
+    .appRoot{ min-height:100vh; }
+
+    .tableWrap{ width:100%; overflow:auto; border-radius:12px; border:1px solid rgba(31,56,100,0.10); background:#fff; }
+    table{ width:100%; border-collapse:separate; border-spacing:0; }
+    thead th{ position:sticky; top:0; z-index:2; background:linear-gradient(180deg,#fff 0%, #f8fafc 100%); text-align:left; font-size:12px; letter-spacing:0.2px; color:#334155; padding:12px; border-bottom:1px solid rgba(31,56,100,0.10); }
+    tbody td{ padding:12px; border-bottom:1px solid rgba(31,56,100,0.06); font-size:13px; color:#0f172a; }
+    tbody tr:nth-child(2n) td{ background:#fbfdff; }
+    tbody tr:hover td{ background:#f2f7ff; }
+    .muted{ color:#64748b; }
+    .chip{ display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; border:1px solid rgba(0,0,0,0.06); }
+    .shadowCard{ background:var(--card); border-radius:12px; box-shadow: var(--shadow); border:1px solid rgba(31,56,100,0.08); }
+    .btn{ border:none; border-radius:var(--btnRadius); cursor:pointer; transition: all .2s; }
+    .btn:disabled{ opacity:0.65; cursor:not-allowed; }
+    .input{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(31,56,100,0.18); background:#fff; outline:none; }
+    .input:focus{ box-shadow: 0 0 0 3px rgba(46,117,182,0.18); border-color: rgba(46,117,182,0.55); }
+    .linkBtn{ background:transparent; border:none; cursor:pointer; color:inherit; padding:0; font:inherit; }
+    .fadeIn{ animation: fadeIn .18s ease-out; }
+    @keyframes fadeIn{ from{ opacity:0; transform: translateY(4px); } to{ opacity:1; transform: translateY(0); } }
+
+    .spinner{
+      width:18px; height:18px;
+      border-radius:50%;
+      border:3px solid rgba(255,255,255,0.35);
+      border-top-color:#fff;
+      animation: spin 0.8s linear infinite;
+      display:inline-block;
+      vertical-align:middle;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg); } }
+
+    /* Modal */
+    .modalOverlay{
+      position:fixed; inset:0;
+      background: rgba(15,23,42,0.55);
+      display:flex; align-items:center; justify-content:center;
+      padding:18px; z-index: 50;
+    }
+    .modalCard{
+      width:min(520px, 96vw);
+      background:#fff; border-radius:16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border:1px solid rgba(31,56,100,0.12);
+      padding:18px;
+    }
+
+    /* Responsive */
+    .mobileOnly{ display:none; }
+    .desktopOnly{ display:initial; }
+
+    @media (max-width: 980px){
+      .loginSplit{ flex-direction:column; }
+      .loginLeft,.loginRight{ width:100% !important; min-height:auto !important; }
+      .loginLeft{ padding:36px 22px !important; }
+      .loginRight{ padding:32px 18px !important; }
+    }
+
+    @media (max-width: 900px){
+      .mobileOnly{ display:initial; }
+      .desktopOnly{ display:none; }
+      .appContent{ margin-left:0 !important; }
+      .topNav{ left:0 !important; }
+      .sidebarFixed{
+        position:fixed !important;
+        z-index:60 !important;
+        transform: translateX(-110%);
+        transition: transform .2s ease;
+      }
+      .sidebarFixed.open{ transform: translateX(0); }
+      .sidebarOverlay{
+        position:fixed; inset:0;
+        background: rgba(15,23,42,0.55);
+        z-index:55;
+      }
+    }
+
+    @media (max-width: 720px){
+      .grid4{ grid-template-columns:1fr 1fr !important; }
+      .grid2{ grid-template-columns:1fr !important; }
+      .stackRow{ flex-direction:column !important; align-items:stretch !important; }
+      .hideSm{ display:none !important; }
+    }
+
+    @media (max-width: 420px){
+      .grid4{ grid-template-columns:1fr !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const BRAND = {
+      name: "ebek",
+      logoDataUrl: "data:image/png;base64,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"
+    };
+
+    const COLORS = {
+      primaryNavy: "#1F3864",
+      blue: "#2E75B6",
+      teal: "#1B6B74",
+      purple: "#6B4C9A",
+      darkBlue: "#1A4A7A",
+      gold: "#C49A1E",
+      background: "#F0F4F8",
+      card: "#FFFFFF",
+      success: "#1B6B74",
+      error: "#C00000",
+      warning: "#C49A1E",
+    };
+
+    const CEFR_COLORS = {
+      "Pre-A1": "#9E9E9E",
+      "A1": "#4CAF50",
+      "A2": "#1B6B74",
+      "B1": "#2E75B6",
+      "B2": "#6B4C9A",
+      "C1": "#FF9800",
+      "C2": "#C00000",
+    };
+
+    const DEMO_ACCOUNTS = [
+      { role:"School Admin", email:"admin@ebak.com", password:"Admin@123", color: COLORS.blue },
+      { role:"Librarian", email:"librarian@ebak.com", password:"Lib@123", color: COLORS.teal },
+      { role:"Principal", email:"principal@ebak.com", password:"Prin@123", color: COLORS.purple },
+      { role:"Management", email:"management@ebak.com", password:"Mgmt@123", color: COLORS.darkBlue },
+    ];
+
+    // ---------- Small UI helpers ----------
+    const Pill = ({ text, bg, color="#fff", borderColor="transparent", style={} }) => (
+      <span className="chip" style={{ background:bg, color, borderColor, ...style }}>{text}</span>
+    );
+
+    const Button = ({ children, onClick, style={}, variant="primary", disabled=false, title }) => {
+      const base = {
+        padding:"10px 12px",
+        fontWeight:800,
+        letterSpacing:"0.2px",
+        borderRadius: 10,
+        cursor: disabled ? "not-allowed" : "pointer",
+        boxShadow: "0 10px 22px rgba(31,56,100,0.12)",
+      };
+      const variants = {
+        primary: { background: COLORS.primaryNavy, color:"#fff", border:"none" },
+        red: { background: "#E21B23", color:"#fff", border:"none" },
+        teal: { background: COLORS.teal, color:"#fff", border:"none" },
+        ghost: { background:"#fff", color: COLORS.primaryNavy, border:"1px solid rgba(31,56,100,0.18)", boxShadow:"none" },
+        warning: { background: COLORS.gold, color:"#1f2937", border:"none" },
+      };
+      return (
+        <button
+          className="btn"
+          title={title}
+          disabled={disabled}
+          onClick={disabled ? undefined : onClick}
+          style={{ ...base, ...variants[variant], ...style, opacity: disabled ? 0.65 : 1 }}
+          onMouseEnter={(e)=>{
+            if (disabled) return;
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.filter = "saturate(1.05)";
+          }}
+          onMouseLeave={(e)=>{
+            e.currentTarget.style.transform = "translateY(0px)";
+            e.currentTarget.style.filter = "none";
+          }}
+        >
+          {children}
+        </button>
+      );
+    };
+
+    const StatCard = ({ icon, label, value, accent }) => (
+      <div className="shadowCard" style={{ padding:14, borderLeft:`6px solid ${accent}`, display:"flex", gap:12, alignItems:"center" }}>
+        <div style={{ fontSize:22 }}>{icon}</div>
+        <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
+          <div className="muted" style={{ fontSize:12, fontWeight:800, letterSpacing:"0.2px" }}>{label}</div>
+          <div style={{ fontSize:22, fontWeight:1000 }}>{value}</div>
+        </div>
+      </div>
+    );
+
+    const Banner = ({ type="success", text, onClose }) => {
+      const bg = type==="success" ? "#DCFCE7" : type==="error" ? "#FEE2E2" : "#FEF3C7";
+      const border = type==="success" ? "#86EFAC" : type==="error" ? "#FCA5A5" : "#FCD34D";
+      const color = type==="success" ? "#166534" : type==="error" ? "#991B1B" : "#92400E";
+      return (
+        <div className="fadeIn" style={{ padding:"10px 12px", borderRadius:12, background:bg, border:`1px solid ${border}`, color, fontWeight:900, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+          <span>{text}</span>
+          {onClose && <button className="linkBtn" onClick={onClose} style={{ fontWeight:1000, color }}>✕</button>}
+        </div>
+      );
+    };
+
+    const Modal = ({ open, title, children, onClose }) => {
+      if (!open) return null;
+      return (
+        <div className="modalOverlay" onClick={onClose}>
+          <div className="modalCard" onClick={(e)=>e.stopPropagation()}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+              <div style={{ fontWeight:1000, fontSize:16 }}>{title}</div>
+              <button className="linkBtn" onClick={onClose} style={{ fontWeight:1000 }}>✕</button>
+            </div>
+            {children}
+          </div>
+        </div>
+      );
+    };
+
+    const Toggle = ({ label, value, onChange }) => (
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:"1px solid rgba(31,56,100,0.08)" }}>
+        <div style={{ fontWeight:800 }}>{label}</div>
+        <div
+          onClick={()=>onChange(!value)}
+          style={{
+            width:50, height:28, borderRadius:999, background: value ? COLORS.teal : "rgba(148,163,184,0.6)",
+            padding:3, cursor:"pointer", transition:"all .2s", display:"flex", alignItems:"center",
+            justifyContent: value ? "flex-end" : "flex-start"
+          }}
+        >
+          <div style={{ width:22, height:22, borderRadius:"50%", background:"#fff", boxShadow:"0 6px 18px rgba(0,0,0,0.18)" }} />
+        </div>
+      </div>
+    );
+
+    const Avatar = ({ name }) => {
+      const parts = name.split(" ").filter(Boolean);
+      const initials = (parts[0]?.[0] || "") + (parts[1]?.[0] || "");
+      return (
+        <div style={{
+          width:34, height:34, borderRadius:"50%",
+          background:"rgba(46,117,182,0.18)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontWeight:1000, color: COLORS.primaryNavy
+        }}>
+          {initials.toUpperCase()}
+        </div>
+      );
+    };
+
+    // ---------- Charts ----------
+    const BarChart = ({ title, labels, data, colors }) => {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(()=>{
+        const ctx = canvasRef.current?.getContext("2d");
+        if (!ctx) return;
+
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+
+        chartRef.current = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{
+              label: title,
+              data,
+              backgroundColor: colors,
+              borderRadius: 8,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display:false },
+              title: { display:true, text:title, color:"#0f172a", font:{ weight:"bold", size:14 } }
+            },
+            scales: {
+              x: { grid: { display:false } },
+              y: { grid: { color:"rgba(31,56,100,0.08)" } }
+            }
+          }
+        });
+
+        return ()=>{
+          if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+          }
+        };
+      }, [title, labels.join("|"), data.join("|"), colors.join("|")]);
+
+      return (
+        <div className="shadowCard" style={{ padding:14, height:320 }}>
+          <div style={{ height:"100%" }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </div>
+      );
+    };
+
+    const LineChart = ({ title, labels, data }) => {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(()=>{
+        const ctx = canvasRef.current?.getContext("2d");
+        if (!ctx) return;
+
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+
+        chartRef.current = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: title,
+              data,
+              tension: 0.35,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display:false },
+              title: { display:true, text:title, color:"#0f172a", font:{ weight:"bold", size:14 } }
+            },
+            scales: {
+              x: { grid: { display:false } },
+              y: { grid: { color:"rgba(31,56,100,0.08)" } }
+            }
+          }
+        });
+
+        return ()=>{
+          if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+          }
+        };
+      }, [title, labels.join("|"), data.join("|")]);
+
+      return (
+        <div className="shadowCard" style={{ padding:14, height:320 }}>
+          <div style={{ height:"100%" }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </div>
+      );
+    };
+
+    const DoughnutChart = ({ title, labels, data, colors }) => {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(()=>{
+        const ctx = canvasRef.current?.getContext("2d");
+        if (!ctx) return;
+
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+
+        chartRef.current = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels,
+            datasets: [{
+              data,
+              backgroundColor: colors,
+              borderWidth: 0,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position:"bottom" },
+              title: { display:true, text:title, color:"#0f172a", font:{ weight:"bold", size:14 } }
+            }
+          }
+        });
+
+        return ()=>{
+          if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+          }
+        };
+      }, [title, labels.join("|"), data.join("|"), colors.join("|")]);
+
+      return (
+        <div className="shadowCard" style={{ padding:14, height:320 }}>
+          <div style={{ height:"100%" }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </div>
+      );
+    };
+
+    const PieChart = ({ title, labels, data, colors }) => {
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(()=>{
+        const ctx = canvasRef.current?.getContext("2d");
+        if (!ctx) return;
+
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+
+        chartRef.current = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels,
+            datasets: [{
+              data,
+              backgroundColor: colors,
+              borderWidth: 0,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position:"bottom" },
+              title: { display:true, text:title, color:"#0f172a", font:{ weight:"bold", size:14 } }
+            }
+          }
+        });
+
+        return ()=>{
+          if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+          }
+        };
+      }, [title, labels.join("|"), data.join("|"), colors.join("|")]);
+
+      return (
+        <div className="shadowCard" style={{ padding:14, height:320 }}>
+          <div style={{ height:"100%" }}>
+            <canvas ref={canvasRef}></canvas>
+          </div>
+        </div>
+      );
+    };
+
+    // ---------- Login Screen ----------
+    function LoginScreen({ onLogin }) {
+      const [role, setRole] = useState("School Admin");
+      const [email, setEmail] = useState("");
+      const [password, setPassword] = useState("");
+      const [showPw, setShowPw] = useState(false);
+      const [error, setError] = useState("");
+      const [loading, setLoading] = useState(false);
+
+      const fill = (acc)=>{
+        setRole(acc.role);
+        setEmail(acc.email);
+        setPassword(acc.password);
+        setError("");
+      };
+
+      const tryLogin = ()=>{
+        setError("");
+        setLoading(true);
+        window.setTimeout(()=>{
+          const ok = DEMO_ACCOUNTS.some(a => a.role===role && a.email===email && a.password===password);
+          setLoading(false);
+          if (!ok) {
+            setError("Invalid credentials. Please use one of the demo accounts below.");
+            return;
+          }
+          onLogin({ role, email });
+        }, 800);
+      };
+
+      const leftStyle = {
+        width:"50%",
+        minHeight:"100vh",
+        background:`linear-gradient(135deg, ${COLORS.primaryNavy} 0%, ${COLORS.blue} 100%)`,
+        color:"#fff",
+        padding:"54px 46px",
+        position:"relative",
+        overflow:"hidden",
+        display:"flex",
+        flexDirection:"column",
+        justifyContent:"center",
+      };
+
+      const rightStyle = {
+        width:"50%",
+        minHeight:"100vh",
+        background:"#fff",
+        padding:"54px 46px",
+        display:"flex",
+        alignItems:"center",
+        justifyContent:"center",
+      };
+
+      return (
+        <div className="loginSplit" style={{ display:"flex" }}>
+          <div className="loginLeft" style={leftStyle}>
+            <div style={{ position:"absolute", left:-140, top:-140, width:300, height:300, borderRadius:"50%", background:"rgba(255,255,255,0.10)", filter:"blur(2px)" }} />
+            <div style={{ position:"absolute", right:40, top:80, width:160, height:160, borderRadius:"50%", background:"rgba(196,154,30,0.22)", filter:"blur(18px)" }} />
+            <div style={{ position:"absolute", right:-120, bottom:-120, width:280, height:280, borderRadius:"50%", background:"rgba(46,117,182,0.28)", filter:"blur(18px)" }} />
+
+            <div style={{ position:"relative", zIndex:1 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <img src={BRAND.logoDataUrl} alt="ebek logo" style={{ height:44, width:"auto", filter:"drop-shadow(0 10px 22px rgba(0,0,0,0.25))" }} />
+                <div style={{ fontSize:48, fontWeight:1000, letterSpacing:"0.6px" }}>ebek</div>
+              </div>
+              <div style={{ marginTop:10, opacity:0.95, fontWeight:800 }}>CEFR-Based School Library Platform</div>
+
+              <div style={{ marginTop:18, display:"flex", gap:10, flexWrap:"wrap" }}>
+                {["Pre-A1","A1","A2","B1","B2","C1","C2"].map((l, idx)=>(
+                  <span key={l} style={{
+                    padding:"8px 12px",
+                    borderRadius:999,
+                    background:"rgba(255,255,255,0.14)",
+                    border:"1px solid rgba(255,255,255,0.18)",
+                    fontWeight:900,
+                    fontSize:12,
+                    transform:`translateY(${(idx%3)*6}px)`
+                  }}>{l}</span>
+                ))}
+              </div>
+
+              <div style={{ marginTop:22, maxWidth:520, opacity:0.9, lineHeight:1.6 }}>
+                Manage inventory, track reading levels, and generate reports — with role-based dashboards for schools.
+              </div>
+            </div>
+          </div>
+
+          <div className="loginRight" style={rightStyle}>
+            <div className="shadowCard" style={{ width:"min(520px, 96vw)", padding:18 }}>
+              <div style={{ fontSize:26, fontWeight:1000 }}>Welcome Back</div>
+              <div className="muted" style={{ marginTop:6, marginBottom:14 }}>
+                Use the demo accounts below to explore the platform.
+              </div>
+
+              <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:10 }}>
+                <div>
+                  <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Role</div>
+                  <select className="input" value={role} onChange={(e)=>setRole(e.target.value)}>
+                    <option>School Admin</option>
+                    <option>Librarian</option>
+                    <option>Principal</option>
+                    <option>Management</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Email</div>
+                  <input className="input" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="name@school.com" />
+                </div>
+
+                <div>
+                  <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Password</div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <input
+                      className="input"
+                      value={password}
+                      onChange={(e)=>setPassword(e.target.value)}
+                      type={showPw ? "text" : "password"}
+                      placeholder="••••••••"
+                      style={{ flex:1 }}
+                    />
+                    <button className="btn" onClick={()=>setShowPw(!showPw)} style={{ width:52, borderRadius:10, background:"#fff", border:"1px solid rgba(31,56,100,0.18)", fontWeight:900 }} title="Show/Hide">
+                      {showPw ? "🙈" : "👁"}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  variant="primary"
+                  onClick={tryLogin}
+                  disabled={loading}
+                  style={{ width:"100%", padding:"12px 14px", borderRadius:12, background: COLORS.primaryNavy }}
+                >
+                  {loading ? <span><span className="spinner"></span> <span style={{ marginLeft:10 }}>Logging in...</span></span> : "LOGIN"}
+                </Button>
+
+                {error && <div style={{ color: COLORS.error, fontWeight:900 }}>{error}</div>}
+              </div>
+
+              <div style={{ marginTop:18 }}>
+                <div style={{ fontWeight:1000, marginBottom:10 }}>Demo Accounts</div>
+                <div className="tableWrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {DEMO_ACCOUNTS.map((a, idx)=>(
+                        <tr key={idx} style={{ cursor:"pointer" }} onClick={()=>fill(a)}>
+                          <td>
+                            <Pill text={a.role} bg={a.color} />
+                          </td>
+                          <td style={{ fontWeight:800 }}>{a.email}</td>
+                          <td style={{ fontFamily:"monospace" }}>{a.password}</td>
+                          <td className="muted" style={{ fontWeight:900 }}>Click to fill →</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="muted" style={{ marginTop:10, fontSize:12 }}>
+                  Clicking any row auto-fills the role, email, and password instantly.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Shared Layout for Dashboards ----------
+    // ---------- Shared Layout for Dashboards ----------
+    function Sidebar({ role, themeColor, items, currentPage, setCurrentPage, mobileOpen, setMobileOpen }) {
+      return (
+        <>
+          {mobileOpen && (
+            <div className="sidebarOverlay" onClick={()=>setMobileOpen(false)}></div>
+          )}
+
+          <div className={"sidebarFixed" + (mobileOpen ? " open" : "")} style={{
+            width:240,
+            background:`linear-gradient(180deg, ${themeColor} 0%, rgba(0,0,0,0.10) 140%)`,
+            color:"#fff",
+            position:"fixed",
+            top:0, left:0, bottom:0,
+            padding:"16px 14px",
+            display:"flex",
+            flexDirection:"column",
+            gap:14,
+          }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 10px", borderRadius:12, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.10)", flex:1 }}>
+                <img src={BRAND.logoDataUrl} alt="ebek" style={{ height:26, width:"auto" }} />
+                <div style={{ fontWeight:1000, fontSize:16 }}>ebek</div>
+              </div>
+              <button className="btn mobileOnly" onClick={()=>setMobileOpen(false)} style={{ width:40, height:40, borderRadius:12, background:"rgba(255,255,255,0.14)", color:"#fff", border:"1px solid rgba(255,255,255,0.14)", fontWeight:1000 }} title="Close">✕</button>
+            </div>
+
+            <div style={{ fontSize:12, opacity:0.9, fontWeight:900, paddingLeft:10 }}>{role}</div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:6 }}>
+              {items.map((it)=>(
+                <button
+                  key={it.key}
+                  className="btn"
+                  onClick={()=>{ setCurrentPage(it.key); setMobileOpen(false); }}
+                  style={{
+                    textAlign:"left",
+                    padding:"10px 12px",
+                    borderRadius:10,
+                    background: currentPage===it.key ? "rgba(255,255,255,0.14)" : "transparent",
+                    color:"#fff",
+                    borderLeft: currentPage===it.key ? "4px solid #fff" : "4px solid transparent",
+                    fontWeight: currentPage===it.key ? 1000 : 800,
+                  }}
+                >
+                  <span style={{ marginRight:10 }}>{it.icon}</span>{it.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ flex:1 }} />
+
+            <div style={{ opacity:0.85, fontSize:12, padding:"0 10px" }}>
+              © {new Date().getFullYear()} ebek
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    function TopNav({ roleLabel, schoolLabel, onLogout, onOpenMenu }) {
+      return (
+        <div className="topNav" style={{
+          position:"fixed",
+          left:240, right:0, top:0,
+          height:64,
+          display:"flex",
+          alignItems:"center",
+          justifyContent:"space-between",
+          padding:"0 14px",
+          background:"rgba(255,255,255,0.88)",
+          backdropFilter:"blur(10px)",
+          borderBottom:"1px solid rgba(31,56,100,0.10)",
+          zIndex:10
+        }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <button className="btn mobileOnly" onClick={onOpenMenu} style={{ width:42, height:42, borderRadius:12, background:"#fff", border:"1px solid rgba(31,56,100,0.10)", fontWeight:1000 }} title="Menu">☰</button>
+            <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px", borderRadius:999, border:"1px solid rgba(31,56,100,0.10)", boxShadow:"0 10px 30px rgba(31,56,100,0.08)", background:"#fff" }}>
+              <img src={BRAND.logoDataUrl} alt="ebek" style={{ height:18, width:"auto" }} />
+              <span style={{ fontWeight:1000 }}>ebek</span>
+            </div>
+          </div>
+
+          <div className="hideSm" style={{ fontWeight:1000, color:"#0f172a", textAlign:"center" }}>{roleLabel} — {schoolLabel}</div>
+
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <div style={{ position:"relative" }}>
+              <button className="btn" style={{ width:40, height:40, borderRadius:12, background:"#fff", border:"1px solid rgba(31,56,100,0.10)" }} title="Notifications">🔔</button>
+              <span style={{ position:"absolute", right:-6, top:-6, background:COLORS.error, color:"#fff", fontWeight:1000, fontSize:11, width:18, height:18, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}>3</span>
+            </div>
+            <Button variant="ghost" onClick={onLogout} style={{ padding:"10px 12px", borderRadius:12, boxShadow:"none" }}>Logout</Button>
+          </div>
+        </div>
+      );
+    }
+
+    function MainShell({ children }) {
+      return (
+        <div className="appContent" style={{ marginLeft:240, padding:"18px", paddingTop:82 }}>
+          {children}
+        </div>
+      );
+    }
+
+    // ---------- Data ----------
+    const ADMIN_ACTIVITY = [
+      { name:"Arjun Sharma", text:"borrowed Charlotte's Web", time:"2 min ago" },
+      { name:"Priya Nair", text:"returned The Giver", time:"15 min ago" },
+      { name:"Sneha Rao", text:"reserved Wonder", time:"28 min ago" },
+      { name:"Rohan Das", text:"borrowed Percy Jackson 1", time:"1 hr ago" },
+      { name:"Meera Pillai", text:"returned Matilda", time:"2 hr ago" },
+      { name:"Aditya Singh", text:"borrowed The Jungle Book", time:"4 hr ago" },
+    ];
+
+    const STUDENTS = [
+      { id:1, name:"Arjun Sharma", grade:5, cls:"5A", cefr:"A2", read:14, status:"Active" },
+      { id:2, name:"Priya Nair", grade:6, cls:"6B", cefr:"B1", read:22, status:"Active" },
+      { id:3, name:"Karan Mehta", grade:4, cls:"4C", cefr:"A1", read:8, status:"Active" },
+      { id:4, name:"Sneha Rao", grade:7, cls:"7A", cefr:"B2", read:31, status:"Active" },
+      { id:5, name:"Ravi Kumar", grade:3, cls:"3B", cefr:"Pre-A1", read:3, status:"Inactive" },
+      { id:6, name:"Ananya Iyer", grade:8, cls:"8A", cefr:"C1", read:45, status:"Active" },
+      { id:7, name:"Rohan Das", grade:5, cls:"5C", cefr:"A2", read:17, status:"Active" },
+      { id:8, name:"Meera Pillai", grade:6, cls:"6A", cefr:"B1", read:19, status:"Active" },
+      { id:9, name:"Aditya Singh", grade:4, cls:"4B", cefr:"A1", read:11, status:"Active" },
+      { id:10, name:"Pooja Reddy", grade:7, cls:"7B", cefr:"B2", read:28, status:"Active" },
+    ];
+
+    const BOOKS = [
+      { id:1, title:"The Magic Tree House", author:"Mary Pope Osborne", isbn:"978-0-679-82411-8", cefr:"A1", status:"Available" },
+      { id:2, title:"Charlotte's Web", author:"E.B. White", isbn:"978-0-06-196398-0", cefr:"A2", status:"Issued" },
+      { id:3, title:"Harry Potter & Sorcerer's Stone", author:"J.K. Rowling", isbn:"978-0-439-02352-8", cefr:"B1", status:"Available" },
+      { id:4, title:"Diary of a Wimpy Kid", author:"Jeff Kinney", isbn:"978-0-81-098543-9", cefr:"A2", status:"Reserved" },
+      { id:5, title:"The Giver", author:"Lois Lowry", isbn:"978-0-54-401046-7", cefr:"B2", status:"Available" },
+      { id:6, title:"Wonder", author:"R.J. Palacio", isbn:"978-0-37-586902-0", cefr:"B1", status:"Issued" },
+      { id:7, title:"Matilda", author:"Roald Dahl", isbn:"978-0-14-241037-1", cefr:"A2", status:"Available" },
+      { id:8, title:"Percy Jackson 1", author:"Rick Riordan", isbn:"978-0-78-688777-7", cefr:"B1", status:"Available" },
+      { id:9, title:"The Jungle Book", author:"Rudyard Kipling", isbn:"978-0-14-036702-2", cefr:"A1", status:"Reserved" },
+      { id:10, title:"The Alchemist", author:"Paulo Coelho", isbn:"978-0-06-231500-7", cefr:"C1", status:"Available" },
+    ];
+
+    const OVERDUE_ROWS = [
+      { id:1, student:"Karan Mehta", book:"Harry Potter 1", issued:"15 days", due:"2026-02-09", days:15 },
+      { id:2, student:"Ravi Kumar", book:"The Jungle Book", issued:"12 days", due:"2026-02-12", days:12 },
+      { id:3, student:"Rohan Das", book:"Matilda", issued:"9 days", due:"2026-02-15", days:9 },
+      { id:4, student:"Pooja Reddy", book:"The Giver", issued:"8 days", due:"2026-02-16", days:8 },
+      { id:5, student:"Aditya Singh", book:"Charlotte's Web", issued:"5 days", due:"2026-02-19", days:5 },
+      { id:6, student:"Meera Pillai", book:"Wonder", issued:"4 days", due:"2026-02-20", days:4 },
+      { id:7, student:"Arjun Sharma", book:"Percy Jackson 1", issued:"3 days", due:"2026-02-21", days:3 },
+      { id:8, student:"Sneha Rao", book:"Diary of a Wimpy Kid", issued:"2 days", due:"2026-02-22", days:2 },
+    ];
+
+    // ---------- Pages ----------
+    function AdminDashboardPage() {
+      const labels = ["Pre-A1","A1","A2","B1","B2","C1","C2"];
+      const data = [80,500,420,380,290,180,90];
+      const colors = labels.map(l => CEFR_COLORS[l]);
+
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="grid4" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14 }}>
+            <StatCard icon="📚" label="Total Books" value="3,800" accent={COLORS.blue} />
+            <StatCard icon="👥" label="Students" value="1,240" accent="#22c55e" />
+            <StatCard icon="🔄" label="Active Borrows" value="142" accent="#f59e0b" />
+            <StatCard icon="⚠️" label="Overdue" value="18" accent={COLORS.error} />
+          </div>
+
+          <div className="grid2" style={{ display:"grid", gridTemplateColumns:"1.2fr 0.8fr", gap:14, alignItems:"stretch" }}>
+            <BarChart title="Books by CEFR Level" labels={labels} data={data} colors={colors} />
+            <div className="shadowCard" style={{ padding:14 }}>
+              <div style={{ fontWeight:1000, marginBottom:12 }}>Recent Activity</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {ADMIN_ACTIVITY.map((a, idx)=>(
+                  <div key={idx} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <Avatar name={a.name} />
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:900 }}>{a.name} <span className="muted" style={{ fontWeight:800 }}> {a.text}</span></div>
+                      <div className="muted" style={{ fontSize:12 }}>{a.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function StudentsPage() {
+      const [q, setQ] = useState("");
+      const [open, setOpen] = useState(false);
+
+      const filtered = STUDENTS.filter(s => {
+        const query = q.trim().toLowerCase();
+        if (!query) return true;
+        const byName = s.name.toLowerCase().includes(query);
+        const byGrade = String(s.grade).includes(query);
+        return byName || byGrade;
+      });
+
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="stackRow" style={{ display:"flex", gap:12, alignItems:"center", justifyContent:"space-between" }}>
+            <input className="input" placeholder="Search by name or grade..." value={q} onChange={(e)=>setQ(e.target.value)} style={{ maxWidth:420 }} />
+            <Button variant="primary" onClick={()=>setOpen(true)} style={{ background: COLORS.primaryNavy }}>＋ Add Student</Button>
+          </div>
+
+          <div className="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Grade</th><th>Class</th><th>CEFR Level</th><th>Books Read</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(s=>(
+                  <tr key={s.id}>
+                    <td>{s.id}</td>
+                    <td style={{ fontWeight:900 }}>{s.name}</td>
+                    <td>{s.grade}</td>
+                    <td>{s.cls}</td>
+                    <td><Pill text={s.cefr} bg={CEFR_COLORS[s.cefr]} /></td>
+                    <td>{s.read}</td>
+                    <td>
+                      <Pill text={s.status} bg={s.status==="Active" ? "#22c55e" : "#94a3b8"} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Modal open={open} title="Add Student (Demo)" onClose={()=>setOpen(false)}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Student Name</div>
+                <input className="input" placeholder="e.g. Kavya Menon" />
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Grade</div>
+                <input className="input" placeholder="e.g. 6" />
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Class</div>
+                <input className="input" placeholder="e.g. 6A" />
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>CEFR Level</div>
+                <select className="input" defaultValue="A2">
+                  {Object.keys(CEFR_COLORS).map(l=><option key={l}>{l}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display:"flex", justifyContent:"flex-end", gap:10, marginTop:14 }}>
+              <Button variant="ghost" onClick={()=>setOpen(false)} style={{ boxShadow:"none" }}>Cancel</Button>
+              <Button variant="primary" onClick={()=>{ alert("Demo: Student saved (not persisted)."); setOpen(false); }} style={{ background: COLORS.primaryNavy }}>
+                Save
+              </Button>
+            </div>
+          </Modal>
+        </div>
+      );
+    }
+
+    function BooksPage() {
+      const [q, setQ] = useState("");
+      const filtered = BOOKS.filter(b => {
+        const query = q.trim().toLowerCase();
+        if (!query) return true;
+        return (
+          b.title.toLowerCase().includes(query) ||
+          b.author.toLowerCase().includes(query) ||
+          b.isbn.toLowerCase().includes(query)
+        );
+      });
+
+      const statusColor = (s)=> {
+        if (s==="Available") return "#22c55e";
+        if (s==="Issued") return COLORS.error;
+        return "#f59e0b";
+      };
+
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="stackRow" style={{ display:"flex", gap:12, alignItems:"center", justifyContent:"space-between" }}>
+            <input className="input" placeholder="Search by title, author, ISBN..." value={q} onChange={(e)=>setQ(e.target.value)} style={{ maxWidth:420 }} />
+            <Button variant="ghost" onClick={()=>alert("⬆ Upload Inventory (Demo)")} style={{ boxShadow:"none" }}>⬆ Upload Inventory</Button>
+          </div>
+
+          <div className="tableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Title</th><th>Author</th><th>ISBN</th><th>CEFR Level</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(b=>(
+                  <tr key={b.id}>
+                    <td>{b.id}</td>
+                    <td style={{ fontWeight:900 }}>{b.title}</td>
+                    <td>{b.author}</td>
+                    <td style={{ fontFamily:"monospace" }}>{b.isbn}</td>
+                    <td><Pill text={b.cefr} bg={CEFR_COLORS[b.cefr]} /></td>
+                    <td><Pill text={b.status} bg={statusColor(b.status)} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    function ReportsPage() {
+      const labels = ["Jan","Feb","Mar","Apr","May","Jun"];
+      const lineData = [180,210,195,240,280,310];
+
+      const distLabels = ["Pre-A1","A1","A2","B1","B2","C1","C2"];
+      const distData = [5,22,28,25,13,5,2];
+      const distColors = distLabels.map(l=>CEFR_COLORS[l]);
+
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="grid2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+            <LineChart title="Books Read per Month" labels={labels} data={lineData} />
+            <DoughnutChart title="Student CEFR Distribution" labels={distLabels} data={distData} colors={distColors} />
+          </div>
+          <div style={{ display:"flex", gap:12 }}>
+            <Button variant="ghost" onClick={()=>alert("📥 Export CSV (Demo)")} style={{ boxShadow:"none" }}>📥 Export CSV</Button>
+            <Button variant="ghost" onClick={()=>alert("📄 Export PDF (Demo)")} style={{ boxShadow:"none" }}>📄 Export PDF</Button>
+          </div>
+        </div>
+      );
+    }
+
+    function SettingsPage() {
+      const [emailNotifs, setEmailNotifs] = useState(true);
+      const [smsOverdue, setSmsOverdue] = useState(true);
+      const [saved, setSaved] = useState(false);
+
+      const save = ()=>{
+        setSaved(true);
+        window.setTimeout(()=>setSaved(false), 2000);
+      };
+
+      return (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:14, maxWidth:720 }}>
+          {saved && <Banner type="success" text="✅ Settings saved successfully!" onClose={()=>setSaved(false)} />}
+
+          <div className="shadowCard" style={{ padding:16 }}>
+            <div style={{ fontWeight:1000, marginBottom:10 }}>Profile</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>School</div>
+                <div style={{ fontWeight:900 }}>Demo School</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Admin Name</div>
+                <div style={{ fontWeight:900 }}>School Admin</div>
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Email</div>
+                <div style={{ fontWeight:900 }}>admin@ebak.com</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="shadowCard" style={{ padding:16 }}>
+            <div style={{ fontWeight:1000, marginBottom:10 }}>Preferences</div>
+            <Toggle label="Email Notifications" value={emailNotifs} onChange={setEmailNotifs} />
+            <Toggle label="SMS Alerts for Overdue" value={smsOverdue} onChange={setSmsOverdue} />
+            <div style={{ display:"flex", justifyContent:"flex-end", marginTop:12 }}>
+              <Button variant="primary" onClick={save} style={{ background: COLORS.primaryNavy }}>Save Settings</Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Librarian ----------
+    function LibrarianDashboardPage() {
+      return (
+        <div className="grid4" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14 }}>
+          <StatCard icon="📤" label="Today's Issues" value="12" accent={COLORS.teal} />
+          <StatCard icon="📥" label="Today's Returns" value="8" accent={COLORS.blue} />
+          <StatCard icon="⚠️" label="Overdue" value="18" accent={COLORS.error} />
+          <StatCard icon="✅" label="Available" value="3,642" accent="#22c55e" />
+        </div>
+      );
+    }
+
+    function IssueBookPage() {
+      const [stuId, setStuId] = useState("");
+      const [isbn, setIsbn] = useState("");
+      const [issueDate, setIssueDate] = useState("2026-02-24");
+      const [dueDate, setDueDate] = useState("2026-03-10");
+      const [msg, setMsg] = useState("");
+
+      useEffect(()=>{
+        const d = new Date(issueDate + "T00:00:00");
+        if (!isNaN(d.getTime())) {
+          d.setDate(d.getDate() + 14);
+          const iso = d.toISOString().slice(0,10);
+          setDueDate(iso);
+        }
+      }, [issueDate]);
+
+      const issue = ()=>{
+        if (!stuId.trim() || !isbn.trim()) {
+          setMsg("error:Please fill Student ID and Book ISBN.");
+          return;
+        }
+        setMsg("success:✅ Book issued successfully! Due date: " + dueDate);
+        window.setTimeout(()=>{
+          setStuId(""); setIsbn(""); setIssueDate("2026-02-24");
+          setMsg("");
+        }, 2000);
+      };
+
+      return (
+        <div style={{ display:"flex", justifyContent:"center" }}>
+          <div className="shadowCard" style={{ width:"min(520px, 96vw)", padding:16 }}>
+            <div style={{ fontWeight:1000, fontSize:16, marginBottom:10 }}>Issue Book</div>
+
+            <div style={{ display:"grid", gap:10 }}>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Student ID</div>
+                <input className="input" placeholder="e.g. STU001" value={stuId} onChange={(e)=>setStuId(e.target.value)} />
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Book ISBN</div>
+                <input className="input" placeholder="e.g. 978-0-679-82411-8" value={isbn} onChange={(e)=>setIsbn(e.target.value)} />
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                <div>
+                  <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Issue Date</div>
+                  <input className="input" type="date" value={issueDate} onChange={(e)=>setIssueDate(e.target.value)} />
+                </div>
+                <div>
+                  <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Due Date</div>
+                  <input className="input" type="date" value={dueDate} onChange={(e)=>setDueDate(e.target.value)} />
+                </div>
+              </div>
+
+              <Button variant="teal" onClick={issue} style={{ background: COLORS.teal }}>Issue Book</Button>
+
+              {msg && msg.startsWith("success:") && <Banner type="success" text={msg.replace("success:","")} onClose={()=>setMsg("")} />}
+              {msg && msg.startsWith("error:") && <Banner type="error" text={msg.replace("error:","")} onClose={()=>setMsg("")} />}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ReturnBookPage() {
+      const [isbn, setIsbn] = useState("");
+      const [returnDate, setReturnDate] = useState("2026-02-24");
+      const [cond, setCond] = useState("Good");
+      const [msg, setMsg] = useState("");
+
+      const proc = ()=>{
+        if (!isbn.trim()) {
+          setMsg("error:Please enter Book ISBN.");
+          return;
+        }
+        setMsg("success:✅ Book returned. Coins credited to student!");
+        window.setTimeout(()=>{
+          setIsbn(""); setReturnDate("2026-02-24"); setCond("Good"); setMsg("");
+        }, 2000);
+      };
+
+      return (
+        <div style={{ display:"flex", justifyContent:"center" }}>
+          <div className="shadowCard" style={{ width:"min(520px, 96vw)", padding:16 }}>
+            <div style={{ fontWeight:1000, fontSize:16, marginBottom:10 }}>Return Book</div>
+
+            <div style={{ display:"grid", gap:10 }}>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Book ISBN</div>
+                <input className="input" placeholder="e.g. 978-0-06-196398-0" value={isbn} onChange={(e)=>setIsbn(e.target.value)} />
+              </div>
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Return Date</div>
+                <input className="input" type="date" value={returnDate} onChange={(e)=>setReturnDate(e.target.value)} />
+              </div>
+
+              <div>
+                <div className="muted" style={{ fontSize:12, fontWeight:900, marginBottom:6 }}>Condition</div>
+                <div style={{ display:"flex", gap:14 }}>
+                  {["Good","Damaged","Lost"].map(v=>(
+                    <label key={v} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontWeight:800 }}>
+                      <input type="radio" name="cond" checked={cond===v} onChange={()=>setCond(v)} />
+                      {v}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <Button variant="teal" onClick={proc} style={{ background: COLORS.teal }}>Process Return</Button>
+
+              {msg && msg.startsWith("success:") && <Banner type="success" text={msg.replace("success:","")} onClose={()=>setMsg("")} />}
+              {msg && msg.startsWith("error:") && <Banner type="error" text={msg.replace("error:","")} onClose={()=>setMsg("")} />}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function OverduePage() {
+      return (
+        <div className="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Student</th><th>Book Title</th><th>Issued</th><th>Due Date</th><th>Days Overdue</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {OVERDUE_ROWS.map(r=>(
+                <tr key={r.id} style={{ background: r.days > 7 ? "#FFF0F0" : undefined }}>
+                  <td>{r.id}</td>
+                  <td style={{ fontWeight:900 }}>{r.student}</td>
+                  <td>{r.book}</td>
+                  <td>{r.issued}</td>
+                  <td style={{ fontFamily:"monospace" }}>{r.due}</td>
+                  <td><Pill text={String(r.days)} bg={r.days>7 ? COLORS.error : "#94a3b8"} /></td>
+                  <td>
+                    <Button variant="ghost" style={{ boxShadow:"none", padding:"8px 10px" }} onClick={()=>alert("📱 Reminder sent to parent of " + r.student + "!")}>
+                      Send Reminder
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    function InventoryPage() {
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <Banner type="warning" text="📦 Inventory view (Demo): Use School Admin → Books for full list." />
+          <div className="shadowCard" style={{ padding:16 }}>
+            <div style={{ fontWeight:1000, marginBottom:6 }}>Quick Actions</div>
+            <div className="muted">This page can be extended to include scanning, batch upload, and barcode workflows.</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Principal ----------
+    function PrincipalOverview() {
+      const labels = ["Jan","Feb","Mar","Apr","May","Jun"];
+      const data = [180,210,195,240,280,310];
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="grid4" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14 }}>
+            <StatCard icon="📚" label="Total Books" value="3,800" accent={COLORS.blue} />
+            <StatCard icon="👥" label="Students" value="1,240" accent="#22c55e" />
+            <StatCard icon="🎯" label="Engagement" value="86%" accent={COLORS.gold} />
+            <StatCard icon="⚠️" label="Overdue" value="18" accent={COLORS.error} />
+          </div>
+          <LineChart title="Books Read per Month" labels={labels} data={data} />
+        </div>
+      );
+    }
+
+    function PrincipalReadingProgress() {
+      const labels = ["Grade 3","Grade 4","Grade 5","Grade 6","Grade 7","Grade 8"];
+      const data = [120, 160, 210, 235, 260, 280];
+      const colors = labels.map(()=>COLORS.blue);
+
+      const top = [
+        { name:"Ananya Iyer", grade:8, cefr:"C1", read:45 },
+        { name:"Sneha Rao", grade:7, cefr:"B2", read:31 },
+        { name:"Pooja Reddy", grade:7, cefr:"B2", read:28 },
+        { name:"Priya Nair", grade:6, cefr:"B1", read:22 },
+        { name:"Meera Pillai", grade:6, cefr:"B1", read:19 },
+      ];
+
+      return (
+        <div style={{ display:"grid", gridTemplateColumns:"1.2fr 0.8fr", gap:14 }}>
+          <BarChart title="Books Read by Grade" labels={labels} data={data} colors={colors} />
+          <div className="shadowCard" style={{ padding:14 }}>
+            <div style={{ fontWeight:1000, marginBottom:10 }}>Top 5 Students</div>
+            <div className="tableWrap" style={{ border:"none" }}>
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>Grade</th><th>CEFR</th><th>Books</th></tr>
+                </thead>
+                <tbody>
+                  {top.map((t, idx)=>(
+                    <tr key={idx}>
+                      <td style={{ fontWeight:900 }}>{t.name}</td>
+                      <td>{t.grade}</td>
+                      <td><Pill text={t.cefr} bg={CEFR_COLORS[t.cefr]} /></td>
+                      <td>{t.read}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PrincipalInventoryReport() {
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <Banner type="warning" text="📦 Inventory Report (Demo): Review CEFR gaps and procurement recommendations." />
+          <div className="shadowCard" style={{ padding:16 }}>
+            <div style={{ fontWeight:1000 }}>Highlights</div>
+            <ul style={{ margin:"10px 0 0 18px", color:"#334155", lineHeight:1.7 }}>
+              <li>A2 and B1 levels have the highest circulation.</li>
+              <li>C1/C2 inventory is limited compared to demand.</li>
+              <li>Overdue trend concentrated in Grades 4–6.</li>
+            </ul>
+          </div>
+        </div>
+      );
+    }
+
+    function PrincipalEngagement() {
+      const labels = ["Pre-A1","A1","A2","B1","B2","C1","C2"];
+      const data = [5,22,28,25,13,5,2];
+      const colors = labels.map(l=>CEFR_COLORS[l]);
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <DoughnutChart title="CEFR Distribution" labels={labels} data={data} colors={colors} />
+          <Button variant="ghost" onClick={()=>alert("📄 Download Report (Demo)")} style={{ boxShadow:"none", maxWidth:220 }}>Download Report</Button>
+        </div>
+      );
+    }
+
+    // ---------- Management ----------
+    function ManagementSummary() {
+      const labels = ["Pre-A1","A1","A2","B1","B2","C1","C2"];
+      const data = [5,22,28,25,13,5,2];
+      const colors = labels.map(l=>CEFR_COLORS[l]);
+
+      return (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <div className="grid4" style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:14 }}>
+            <StatCard icon="🏫" label="Schools Onboarded" value="24" accent={COLORS.darkBlue} />
+            <StatCard icon="📚" label="Total Inventory" value="92,400" accent={COLORS.blue} />
+            <StatCard icon="🔄" label="Active Circulation" value="3,212" accent={COLORS.gold} />
+            <StatCard icon="⭐" label="Satisfaction" value="4.7/5" accent="#22c55e" />
+          </div>
+          <PieChart title="CEFR Distribution (Network)" labels={labels} data={data} colors={colors} />
+        </div>
+      );
+    }
+
+    function InventoryGap() {
+      const gaps = [
+        { title:"Oxford Reading Tree – Level 1", reason:"Pre-A1 coverage low", rec:"Add 30 copies" },
+        { title:"Cambridge Young Readers – Starter", reason:"High demand in Grade 3", rec:"Add 25 copies" },
+        { title:"Penguin Readers – A1 Pack", reason:"A1 progression needed", rec:"Add 40 copies" },
+        { title:"National Geographic Readers – B2", reason:"B2 inventory thin", rec:"Add 15 copies" },
+        { title:"Classic Novels – C1/C2", reason:"Advanced track shortage", rec:"Add 12 copies" },
+      ];
+      return (
+        <div className="tableWrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Missing Book</th><th>Why Needed</th><th>Recommendation</th></tr>
+            </thead>
+            <tbody>
+              {gaps.map((g, idx)=>(
+                <tr key={idx}>
+                  <td>{idx+1}</td>
+                  <td style={{ fontWeight:900 }}>{g.title}</td>
+                  <td>{g.reason}</td>
+                  <td><Pill text={g.rec} bg={COLORS.gold} color="#1f2937" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    function AnalyticsPage() {
+      return (
+        <div className="grid2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          <LineChart title="Monthly Reading Trend" labels={["Jan","Feb","Mar","Apr","May","Jun"]} data={[180,210,195,240,280,310]} />
+          <DoughnutChart
+            title="Overdue by Segment"
+            labels={["Grades 3–4","Grades 5–6","Grades 7–8"]}
+            data={[35,50,15]}
+            colors={[COLORS.blue, COLORS.darkBlue, COLORS.gold]}
+          />
+        </div>
+      );
+    }
+
+    function ComparisonPage() {
+      const before = [
+        { level:"A1", count:320 },
+        { level:"A2", count:240 },
+        { level:"B1", count:180 },
+        { level:"B2", count:90 },
+      ];
+      const after = [
+        { level:"A1", count:500 },
+        { level:"A2", count:420 },
+        { level:"B1", count:380 },
+        { level:"B2", count:290 },
+      ];
+      return (
+        <div className="grid2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          <div className="shadowCard" style={{ padding:14 }}>
+            <div style={{ fontWeight:1000, marginBottom:10 }}>Before Inventory Update</div>
+            <div className="tableWrap" style={{ border:"none" }}>
+              <table>
+                <thead><tr><th>CEFR</th><th>Books</th></tr></thead>
+                <tbody>
+                  {before.map((r, idx)=>(
+                    <tr key={idx}>
+                      <td><Pill text={r.level} bg={CEFR_COLORS[r.level]} /></td>
+                      <td>{r.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="shadowCard" style={{ padding:14 }}>
+            <div style={{ fontWeight:1000, marginBottom:10 }}>After Inventory Update</div>
+            <div className="tableWrap" style={{ border:"none" }}>
+              <table>
+                <thead><tr><th>CEFR</th><th>Books</th></tr></thead>
+                <tbody>
+                  {after.map((r, idx)=>(
+                    <tr key={idx}>
+                      <td><Pill text={r.level} bg={CEFR_COLORS[r.level]} /></td>
+                      <td>{r.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Role Dashboards ----------
+    function SchoolAdminApp({ onLogout }) {
+      const [currentPage, setCurrentPage] = useState("dashboard");
+      const [mobileOpen, setMobileOpen] = useState(false);
+      const items = [
+        { key:"dashboard", label:"Dashboard", icon:"📊" },
+        { key:"students", label:"Students", icon:"👥" },
+        { key:"books", label:"Books", icon:"📚" },
+        { key:"reports", label:"Reports", icon:"📈" },
+        { key:"settings", label:"Settings", icon:"⚙️" },
+      ];
+
+      const render = ()=>{
+        if (currentPage==="dashboard") return <AdminDashboardPage />;
+        if (currentPage==="students") return <StudentsPage />;
+        if (currentPage==="books") return <BooksPage />;
+        if (currentPage==="reports") return <ReportsPage />;
+        return <SettingsPage />;
+      };
+
+      return (
+        <div className="appRoot">
+          <Sidebar role="School Admin" themeColor={COLORS.primaryNavy} items={items} currentPage={currentPage} setCurrentPage={setCurrentPage} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          <TopNav roleLabel="School Admin" schoolLabel="Demo School" onLogout={onLogout} onOpenMenu={()=>setMobileOpen(true)} />
+          <MainShell>
+            {render()}
+          </MainShell>
+        </div>
+      );
+    }
+
+    function LibrarianApp({ onLogout }) {
+      const [currentPage, setCurrentPage] = useState("dashboard");
+      const [mobileOpen, setMobileOpen] = useState(false);
+      const items = [
+        { key:"dashboard", label:"Dashboard", icon:"📊" },
+        { key:"issue", label:"Issue Book", icon:"📤" },
+        { key:"return", label:"Return Book", icon:"📥" },
+        { key:"inventory", label:"Inventory", icon:"📦" },
+        { key:"overdue", label:"Overdue", icon:"⚠️" },
+      ];
+
+      const render = ()=>{
+        if (currentPage==="dashboard") return <LibrarianDashboardPage />;
+        if (currentPage==="issue") return <IssueBookPage />;
+        if (currentPage==="return") return <ReturnBookPage />;
+        if (currentPage==="inventory") return <InventoryPage />;
+        return <OverduePage />;
+      };
+
+      return (
+        <div className="appRoot">
+          <Sidebar role="Librarian" themeColor={COLORS.teal} items={items} currentPage={currentPage} setCurrentPage={setCurrentPage} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          <TopNav roleLabel="Librarian" schoolLabel="Demo School" onLogout={onLogout} onOpenMenu={()=>setMobileOpen(true)} />
+          <MainShell>
+            {render()}
+          </MainShell>
+        </div>
+      );
+    }
+
+    function PrincipalApp({ onLogout }) {
+      const [currentPage, setCurrentPage] = useState("overview");
+      const [mobileOpen, setMobileOpen] = useState(false);
+      const items = [
+        { key:"overview", label:"Overview", icon:"📊" },
+        { key:"progress", label:"Reading Progress", icon:"📈" },
+        { key:"inventory", label:"Inventory Report", icon:"📦" },
+        { key:"engagement", label:"Engagement", icon:"🎯" },
+      ];
+
+      const render = ()=>{
+        if (currentPage==="overview") return <PrincipalOverview />;
+        if (currentPage==="progress") return <PrincipalReadingProgress />;
+        if (currentPage==="inventory") return <PrincipalInventoryReport />;
+        return <PrincipalEngagement />;
+      };
+
+      return (
+        <div className="appRoot">
+          <Sidebar role="Principal" themeColor={COLORS.purple} items={items} currentPage={currentPage} setCurrentPage={setCurrentPage} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          <TopNav roleLabel="Principal" schoolLabel="Demo School" onLogout={onLogout} onOpenMenu={()=>setMobileOpen(true)} />
+          <MainShell>
+            {render()}
+          </MainShell>
+        </div>
+      );
+    }
+
+    function ManagementApp({ onLogout }) {
+      const [currentPage, setCurrentPage] = useState("summary");
+      const [mobileOpen, setMobileOpen] = useState(false);
+      const items = [
+        { key:"summary", label:"Summary", icon:"📊" },
+        { key:"gap", label:"Inventory Gap", icon:"📋" },
+        { key:"analytics", label:"Analytics", icon:"📈" },
+        { key:"comparison", label:"Comparison", icon:"🔍" },
+      ];
+
+      const render = ()=>{
+        if (currentPage==="summary") return <ManagementSummary />;
+        if (currentPage==="gap") return <InventoryGap />;
+        if (currentPage==="analytics") return <AnalyticsPage />;
+        return <ComparisonPage />;
+      };
+
+      return (
+        <div className="appRoot">
+          <Sidebar role="Management" themeColor={COLORS.darkBlue} items={items} currentPage={currentPage} setCurrentPage={setCurrentPage} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+          <TopNav roleLabel="Management" schoolLabel="Demo School" onLogout={onLogout} onOpenMenu={()=>setMobileOpen(true)} />
+          <MainShell>
+            {render()}
+          </MainShell>
+        </div>
+      );
+    }
+
+    // ---------- App Root ----------
+    function App() {
+      const [currentScreen, setCurrentScreen] = useState("login"); // login | admin | librarian | principal | management
+
+      const onLogin = (u)=>{
+        if (u.role==="School Admin") setCurrentScreen("admin");
+        else if (u.role==="Librarian") setCurrentScreen("librarian");
+        else if (u.role==="Principal") setCurrentScreen("principal");
+        else setCurrentScreen("management");
+      };
+
+      const onLogout = ()=>{
+        setCurrentScreen("login");
+      };
+
+      if (currentScreen==="login") return <LoginScreen onLogin={onLogin} />;
+      if (currentScreen==="admin") return <SchoolAdminApp onLogout={onLogout} />;
+      if (currentScreen==="librarian") return <LibrarianApp onLogout={onLogout} />;
+      if (currentScreen==="principal") return <PrincipalApp onLogout={onLogout} />;
+      return <ManagementApp onLogout={onLogout} />;
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
